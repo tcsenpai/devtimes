@@ -12,6 +12,9 @@ broadsheet — masthead, columns, fake ads and all. Built for the
 
 ---
 
+<img width="1786" height="918" alt="CleanShot 2026-05-24 at 19 52 26" src="https://github.com/user-attachments/assets/f3d87531-d978-40df-9a9a-7dd5e89b6e1d" />
+
+
 ## What it does
 
 - Pulls posts from the daily.dev Public API via your PAT (server-side).
