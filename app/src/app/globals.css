@@ -1,0 +1,350 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --ink: #1a1a17;
+  --ink-soft: #2c2c28;
+  --paper: #f4ecd8;
+  --paper-shade: #e9dfc4;
+  --paper-deep: #d9cba5;
+  --rule: #2a2a26;
+  --accent: #8a1c1c;
+  --desk: #2a1f15;
+  --desk-glow: #3a2d20;
+  --lamp-x: 50%;
+  --lamp-y: 40%;
+  --lamp-radius: 0%;
+  --lamp-glow: rgba(255, 200, 120, 0);
+  --vignette: rgba(0, 0, 0, 0);
+  --ink-bleed: 0;
+}
+
+/* Morning: crisp, bright, slight cool tint */
+body.tod-morning {
+  --paper: #f7f0dd;
+  --paper-shade: #ece2c8;
+  --ink: #1a1a17;
+}
+
+/* Day: default warm paper, no extras */
+body.tod-day {
+  --paper: #f4ecd8;
+  --paper-shade: #e9dfc4;
+  --ink: #1a1a17;
+}
+
+/* Evening: warm lamp glow on book, dimmer ambient */
+body.tod-evening {
+  --paper: #f0e5c2;
+  --paper-shade: #e2d5a8;
+  --ink: #211e15;
+  --lamp-radius: 70%;
+  --lamp-glow: rgba(255, 190, 110, 0.18);
+  --vignette: rgba(20, 12, 4, 0.25);
+}
+
+/* Night: candlelight, ink bleed effect (slightly fuzzy ink) */
+body.tod-night {
+  --paper: #e8dcb0;
+  --paper-shade: #d9cba0;
+  --ink: #2b1e10;
+  --ink-soft: #3a2a18;
+  --lamp-radius: 55%;
+  --lamp-glow: rgba(255, 165, 80, 0.28);
+  --vignette: rgba(8, 4, 0, 0.42);
+  --ink-bleed: 1;
+}
+
+body.tod-night .headline,
+body.tod-night .book-page p,
+body.tod-night .kicker {
+  text-shadow:
+    0 0 0.6px rgba(60, 30, 5, 0.55),
+    0 0 1.5px rgba(60, 30, 5, 0.25);
+}
+
+/* TOC tablet tap wiggle — subtle */
+@keyframes tocWiggle {
+  0%   { transform: translateY(-50%) rotate(0deg) translateX(0); }
+  25%  { transform: translateY(-50%) rotate(-0.35deg) translateX(-0.5px); }
+  60%  { transform: translateY(-50%) rotate(0.4deg) translateX(0.5px); }
+  100% { transform: translateY(-50%) rotate(0deg) translateX(0); }
+}
+.toc-wiggle {
+  animation: tocWiggle 0.32s ease-out;
+}
+
+/* PRINT — unroll book, landscape, fit-to-page, hide chrome */
+@page {
+  size: A4 landscape;
+  margin: 8mm;
+}
+
+@media print {
+  html, body, body.fullscreen-book {
+    background: white !important;
+    height: auto !important;
+    overflow: visible !important;
+    color: #000 !important;
+  }
+  body::before, body::after { display: none !important; }
+  .book-shadow { filter: none !important; }
+  /* hide all overlay UI: top bar, ToC tablet, share modal, desk decor */
+  .z-40, .z-50, .z-30 { display: none !important; }
+  /* page-flip absolute layout: reset to flow */
+  .stf__parent, .stf__wrapper, .stf__block {
+    position: static !important;
+    width: 100% !important;
+    height: auto !important;
+    transform: none !important;
+    display: block !important;
+  }
+  .stf__item {
+    display: block !important;
+    position: static !important;
+    width: 100% !important;
+    height: auto !important;
+    page-break-after: always;
+    break-after: page;
+    transform: none !important;
+    box-shadow: none !important;
+    border: none !important;
+  }
+  /* one spread per printed page, sized to landscape A4 minus margin */
+  .book-page {
+    box-shadow: none !important;
+    border: none !important;
+    overflow: hidden !important;
+    background: white !important;
+    background-image: none !important;
+    height: 100% !important;
+    max-height: calc(210mm - 16mm) !important; /* landscape A4 height */
+    min-height: calc(210mm - 16mm) !important;
+    width: 100% !important;
+    page-break-after: always;
+    break-after: page;
+  }
+  .book-page::after { display: none !important; }
+  .page-content {
+    height: 100% !important;
+    overflow: hidden !important;
+    font-size: 11pt !important;
+    padding: 8mm !important;
+  }
+  .page-content::after { display: none !important; }
+  /* shrink display font sizes for print */
+  .headline { font-size: 18pt !important; }
+  h1.font-masthead { font-size: 36pt !important; }
+  /* hide stains in print */
+  [class*="StainLayer"], aside[aria-hidden="true"] { display: none !important; }
+}
+
+/* Lamp + vignette layer over the desk (under the book) */
+body.fullscreen-book::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    circle at var(--lamp-x) var(--lamp-y),
+    var(--lamp-glow) 0%,
+    transparent var(--lamp-radius)
+  );
+  z-index: 20;
+  transition: background 1.4s ease;
+}
+
+body.fullscreen-book::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse at center,
+    transparent 40%,
+    var(--vignette) 100%
+  );
+  z-index: 21;
+  transition: background 1.4s ease;
+}
+
+html,
+body {
+  background: var(--paper);
+  color: var(--ink);
+  margin: 0;
+  padding: 0;
+}
+
+body.fullscreen-book {
+  height: 100vh;
+  overflow: hidden;
+}
+
+body {
+  font-family: var(--font-body), Georgia, "Times New Roman", serif;
+  font-size: 17px;
+  line-height: 1.55;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+.font-display {
+  font-family: var(--font-display), Georgia, serif;
+  font-weight: 900;
+  letter-spacing: -0.01em;
+}
+
+.font-masthead {
+  font-family: var(--font-masthead), "UnifrakturCook", "Old English Text MT", serif;
+}
+
+.newsprint {
+  background-color: var(--paper);
+  background-image:
+    radial-gradient(rgba(60, 40, 10, 0.07) 1px, transparent 1px),
+    radial-gradient(rgba(120, 80, 30, 0.05) 1px, transparent 1px);
+  background-size: 3px 3px, 7px 7px;
+  background-position: 0 0, 1px 1px;
+}
+
+.rule-thick {
+  border-top: 3px double var(--rule);
+}
+
+.rule-thin {
+  border-top: 1px solid var(--rule);
+}
+
+.kicker {
+  font-family: var(--font-display), serif;
+  font-variant: small-caps;
+  letter-spacing: 0.18em;
+  font-size: 0.72rem;
+  color: var(--ink-soft);
+  text-transform: lowercase;
+}
+
+.byline {
+  font-family: var(--font-body), serif;
+  font-style: italic;
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+}
+
+.drop-cap::first-letter {
+  font-family: var(--font-display), serif;
+  font-weight: 900;
+  float: left;
+  font-size: 4.2em;
+  line-height: 0.85;
+  padding: 0.05em 0.12em 0 0;
+  color: var(--ink);
+}
+
+.headline {
+  font-family: var(--font-display), serif;
+  font-weight: 900;
+  line-height: 1.04;
+  letter-spacing: -0.012em;
+  color: var(--ink);
+}
+
+.section-rule {
+  background-image: repeating-linear-gradient(
+    to right,
+    var(--rule) 0,
+    var(--rule) 2px,
+    transparent 2px,
+    transparent 6px
+  );
+  height: 2px;
+}
+
+.col-rule {
+  column-rule: 1px solid rgba(40, 30, 10, 0.35);
+}
+
+.page-content {
+  position: relative;
+  height: 100%;
+  overflow: hidden;
+}
+
+.page-content::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 28px;
+  pointer-events: none;
+  background: linear-gradient(to bottom, transparent, var(--paper) 92%);
+}
+
+.article-body p {
+  margin-bottom: 0.7em;
+  text-align: justify;
+  hyphens: auto;
+}
+
+.article-body a {
+  color: var(--accent);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+}
+
+.book-page {
+  background-color: var(--paper);
+  background-image:
+    /* spine gradient: dark on inner edges */
+    linear-gradient(to right, rgba(0, 0, 0, 0.10), transparent 4%, transparent 96%, rgba(0, 0, 0, 0.10)),
+    /* subtle vertical age */
+    linear-gradient(to bottom, rgba(120, 80, 30, 0.06), transparent 30%, transparent 70%, rgba(120, 80, 30, 0.08)),
+    /* paper grain */
+    radial-gradient(rgba(60, 40, 10, 0.06) 1px, transparent 1px),
+    radial-gradient(rgba(120, 80, 30, 0.04) 1px, transparent 1px);
+  background-size: 100% 100%, 100% 100%, 3px 3px, 7px 7px;
+  background-position: 0 0, 0 0, 0 0, 1px 1px;
+  box-shadow:
+    /* inner top edge highlight */
+    0 1px 0 rgba(255, 245, 220, 0.4) inset,
+    /* inner bottom shadow */
+    0 -1px 0 rgba(40, 30, 10, 0.08) inset;
+  overflow: hidden;
+}
+
+/* fiber-like edges using pseudo */
+.book-page::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    repeating-linear-gradient(
+      90deg,
+      transparent 0,
+      transparent 2px,
+      rgba(120, 80, 30, 0.015) 2px,
+      rgba(120, 80, 30, 0.015) 3px
+    );
+  mix-blend-mode: multiply;
+}
+
+.book-page {
+  position: relative;
+}
+
+.book-shadow {
+  filter:
+    drop-shadow(0 30px 60px rgba(0, 0, 0, 0.55))
+    drop-shadow(0 8px 16px rgba(0, 0, 0, 0.35))
+    drop-shadow(0 1px 2px rgba(0, 0, 0, 0.25));
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
