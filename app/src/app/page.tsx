@@ -288,6 +288,17 @@ export default async function Home({
           </a>
           . Composed for the daily.dev Hackathon, MMXXVI.
         </p>
+        <p className="mt-1 text-xs italic text-ink-soft">
+          Source on{" "}
+          <a
+            href="https://github.com/tcsenpai/devtimes"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline"
+          >
+            github.com/tcsenpai/devtimes
+          </a>
+        </p>
         <SecretsCounter />
         <p className="mt-3 text-[10px] uppercase tracking-[0.18em] text-ink-soft">
           — Fin —
