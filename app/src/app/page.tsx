@@ -23,8 +23,8 @@ import { SECTIONS } from "@/lib/sections";
 import type { Post } from "@/lib/dailydev/types";
 import { NewspaperBuilder } from "@/components/NewspaperBuilder";
 
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
+// 8h ISR; the internal scheduler also calls revalidateTag('feed') 3x/day
+export const revalidate = 28800;
 
 function chunk<T>(arr: T[], n: number): T[][] {
   const out: T[][] = [];

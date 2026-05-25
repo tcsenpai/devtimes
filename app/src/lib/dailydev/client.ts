@@ -11,7 +11,11 @@ function getPat(): string {
 type FetchOpts = {
   revalidate?: number;
   signal?: AbortSignal;
+  tags?: string[];
 };
+
+// Default 8-hour revalidate; scheduler / cron can force-bust via revalidateTag
+const DEFAULT_REVALIDATE = 8 * 60 * 60;
 
 async function ddFetch<T>(
   path: string,
@@ -25,7 +29,10 @@ async function ddFetch<T>(
       Accept: "application/json",
       "User-Agent": "TheDevTimes/1.0 (+https://devtimes.com)",
     },
-    next: { revalidate: opts.revalidate ?? 300 },
+    next: {
+      revalidate: opts.revalidate ?? DEFAULT_REVALIDATE,
+      tags: opts.tags ?? ["feed"],
+    },
     signal: opts.signal,
   });
   if (!res.ok) {
@@ -92,7 +99,7 @@ export async function getPost(id: string, opts?: FetchOpts): Promise<Post> {
   const env = await ddFetch(
     `/posts/${encodeURIComponent(id)}`,
     PostEnvelopeSchema,
-    opts
+    { ...opts, tags: opts?.tags ?? ["post"] }
   );
   return env.data;
 }

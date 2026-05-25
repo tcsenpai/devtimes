@@ -120,6 +120,18 @@ PORT=3939 HOST=127.0.0.1 bun .next/standalone/server.js
 | `/api/dd/feed?kind=&tag=&limit=&...`  | Feed proxy (popular / foryou / discussed) |
 | `/api/dd/post/[id]`                   | Single-post proxy                         |
 | `/api/dd/sources?limit=`              | Top sources tally (1h cache)              |
+| `/api/refresh`                        | Force-refresh feed cache (also runs auto every 8h) |
+
+## Refresh schedule
+
+Pages cache for 8 hours (Next ISR). An internal scheduler runs on first
+request and then every 8 hours; it calls `revalidateTag("feed")` and
+pre-warms the popular + community feeds. That's three refreshes per day,
+no external cron needed.
+
+If you want to force a refresh sooner — for example, after editing
+something — hit `GET /api/refresh`. Set `REFRESH_SECRET` in `.env` to
+require `?key=...` or `X-Refresh-Key` on that route.
 
 ## Composing your own edition
 

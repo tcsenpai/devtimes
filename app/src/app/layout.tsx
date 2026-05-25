@@ -5,6 +5,11 @@ import { ErrorFilter } from "@/components/ErrorFilter";
 import { TimeOfDay } from "@/components/TimeOfDay";
 import { SecretToast } from "@/components/SecretToast";
 import { SecretDetector } from "@/components/SecretDetector";
+import { AutoRefresh } from "@/components/AutoRefresh";
+import { ensureScheduler } from "@/lib/scheduler";
+
+// kick off the refresher on first server-side import
+ensureScheduler();
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
@@ -49,6 +54,7 @@ export default function RootLayout({
         <TimeOfDay />
         <SecretDetector />
         <SecretToast />
+        <AutoRefresh />
         {children}
       </body>
     </html>

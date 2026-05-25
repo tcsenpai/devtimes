@@ -9,8 +9,7 @@ import { getByTag, getPopular } from "@/lib/dailydev/client";
 import { sectionBySlug, SECTIONS } from "@/lib/sections";
 import type { Post } from "@/lib/dailydev/types";
 
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
+export const revalidate = 28800;
 
 function chunk<T>(arr: T[], n: number): T[][] {
   const out: T[][] = [];
