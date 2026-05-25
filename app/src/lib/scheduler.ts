@@ -7,9 +7,6 @@
  * spawned in dev / HMR / multiple route imports.
  */
 
-import { revalidateTag } from "next/cache";
-import { getPopular, getBySource } from "./dailydev/client";
-
 const STARTED_KEY = Symbol.for("devtimes.scheduler.started");
 const REFRESH_KEY = Symbol.for("devtimes.scheduler.lastRefresh");
 
@@ -20,25 +17,29 @@ type GlobalWithFlags = typeof globalThis & {
 
 const REFRESH_INTERVAL_MS = 8 * 60 * 60 * 1000; // 8h → 3x/day
 
-async function warmCaches() {
-  try {
-    // Pre-warm the two most common feeds users land on
-    await Promise.allSettled([
-      getPopular({ limit: 50 }, { revalidate: 1 }),
-      getPopular({ limit: 50, page: 1 }, { revalidate: 1 }),
-      getPopular({ limit: 50, page: 2 }, { revalidate: 1 }),
-      getBySource("community", { limit: 50 }, { revalidate: 1 }),
-      getBySource("community", { limit: 50, page: 1 }, { revalidate: 1 }),
-    ]);
-  } catch (e) {
-    console.error("[scheduler] warm fail", e);
-  }
+function refreshUrl(): string {
+  // ALWAYS loopback for self-refresh — avoids the public URL / proxy / TLS round-trip
+  const port = process.env.PORT || process.env.HOST_PORT || "3939";
+  const host = process.env.HOSTNAME || process.env.HOST_BIND || "127.0.0.1";
+  // HOSTNAME may be 0.0.0.0 in Docker; coerce to loopback
+  const bindHost = host === "0.0.0.0" || host === "::" ? "127.0.0.1" : host;
+  const key = process.env.REFRESH_SECRET;
+  const qs = key ? `?key=${encodeURIComponent(key)}` : "";
+  return `http://${bindHost}:${port}/api/refresh${qs}`;
 }
 
 async function refresh() {
+  // revalidateTag must be called inside a request-scoped context, so we
+  // self-fetch /api/refresh instead of importing it directly.
   try {
-    revalidateTag("feed");
-    await warmCaches();
+    const res = await fetch(refreshUrl(), {
+      cache: "no-store",
+      signal: AbortSignal.timeout(20_000),
+    });
+    if (!res.ok) {
+      console.error(`[scheduler] refresh HTTP ${res.status}`);
+      return;
+    }
     (globalThis as GlobalWithFlags)[REFRESH_KEY] = Date.now();
     console.log(`[scheduler] refreshed @ ${new Date().toISOString()}`);
   } catch (e) {
